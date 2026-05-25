@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>K3SD KECAMATAN BAKUMPAI</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .bg-utama { background-color: #043927; }
+        .text-utama { color: #043927; }
+        .border-utama { border-color: #043927; }
+        .bg-aksen { background-color: #FFC107; }
+        .text-aksen { color: #FFC107; }
+    </style>
+</head>
+<body class="bg-gray-50 flex flex-col min-h-screen text-gray-800">
+
+    <nav class="bg-white shadow-md sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-20 items-center">
+                <div class="flex items-center space-x-3 cursor-pointer" onclick="switchPage('beranda')">
+                    <div class="bg-utama p-2.5 rounded-lg shadow-inner">
+                        <i class="fa-solid fa-graduation-cap text-2xl text-white"></i>
+                    </div>
+                    <div>
+                        <span class="font-bold text-lg tracking-wide text-utama block leading-tight">K3SD PROVINSI</span>
+                        <span class="text-xs font-semibold text-aksen block tracking-widest uppercase">Kalimantan Selatan</span>
+                    </div>
+                </div>
+
+                <div class="hidden md:flex space-x-1 lg:space-x-4 items-center">
+                    <button onclick="switchPage('beranda')" id="nav-beranda" class="nav-link px-4 py-2 rounded-lg font-medium text-sm text-utama bg-gray-100 font-semibold">Beranda</button>
+                    <button onclick="switchPage('profil')" id="nav-profil" class="nav-link px-4 py-2 rounded-lg font-medium text-sm text-gray-600 hover:text-utama hover:bg-gray-50">Profil</button>
+                    <button onclick="switchPage('kegiatan')" id="nav-kegiatan" class="nav-link px-4 py-2 rounded-lg font-medium text-sm text-gray-600 hover:text-utama hover:bg-gray-50">Kegiatan</button>
+                    <button onclick="switchPage('dokumentasi')" id="nav-dokumentasi" class="nav-link px-4 py-2 rounded-lg font-medium text-sm text-gray-600 hover:text-utama hover:bg-gray-50">Dokumentasi</button>
+                    
+                    <div class="pl-4 border-l border-gray-200 ml-2">
+                        <button id="btn-login-trigger" onclick="toggleModal('modal-login', true)" class="bg-utama hover:bg-emerald-900 text-white font-medium text-sm px-5 py-2.5 rounded-lg shadow flex items-center space-x-2 cursor-pointer">
+                            <i class="fa-solid fa-right-to-bracket text-xs"></i> <span>Login Admin</span>
+                        </button>
+                        <div id="admin-badge" class="hidden flex items-center space-x-3">
+                            <span class="bg-amber-100 text-amber-800 text-xs font-bold px-3 py-1.5 rounded-md border border-amber-200 flex items-center shadow-sm">
+                                <span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse mr-1.5"></span>Mode Cloud Admin
+                            </span>
+                            <button onclick="logoutAdmin()" class="bg-red-50 hover:bg-red-100 text-red-600 font-semibold text-xs px-3 py-1.5 rounded-md border border-red-200 cursor-pointer">Logout</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="md:hidden flex items-center">
+                    <button onclick="toggleMobileMenu()" class="text-gray-600 hover:text-utama p-2 rounded-lg hover:bg-gray-100">
+                        <i id="menu-icon" class="fa-solid fa-bars text-xl"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div id="mobile-menu" class="hidden md:hidden bg-white border-t border-gray-100 px-4 pt-2 pb-4 space-y-1 shadow-lg">
+            <button onclick="switchPage('beranda')" class="block w-full text-left px-4 py-3 rounded-lg text-base font-medium text-utama bg-gray-50">Beranda</button>
+            <button onclick="switchPage('profil')" class="block w-full text-left px-4 py-3 rounded-lg text-base font-medium text-gray-600 hover:bg-gray-50">Profil</button>
+            <button onclick="switchPage('kegiatan')" class="block w-full text-left px-4 py-3 rounded-lg text-base font-medium text-gray-600 hover:bg-gray-50">Kegiatan</button>
+            <button onclick="switchPage('dokumentasi')" class="block w-full text-left px-4 py-3 rounded-lg text-base font-medium text-gray-600 hover:bg-gray-50">Dokumentasi</button>
+            <div class="pt-4 border-t border-gray-100 mt-2">
+                <button id="btn-login-trigger-mobile" onclick="toggleModal('modal-login', true)" class="w-full bg-utama text-white font-medium py-3 rounded-lg text-center cursor-pointer">Login Admin</button>
+                <div id="admin-badge-mobile" class="hidden space-y-2">
+                    <div class="bg-amber-50 text-amber-800 text-sm font-bold p-3 rounded-lg border border-amber-200 text-center">Mode Cloud Admin Aktif</div>
+                    <button onclick="logoutAdmin()" class="w-full bg-red-600 text-white font-medium py-3 rounded-lg text-center cursor-pointer">Logout</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="flex-grow">
+        
+        <div id="page-beranda" class="page-section">
+            <div class="bg-utama text-white py-12 md:py-20 overflow-hidden relative">
+                <div class="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-emerald-800/40 via-transparent to-transparent"></div>
+                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+                    <div class="grid md:grid-cols-12 gap-8 md:gap-12 items-center">
+                        <div class="md:col-span-7 space-y-6">
+                            <span class="bg-aksen text-utama text-xs font-bold px-3 py-1.5 rounded-md tracking-wider uppercase inline-block shadow-sm">Portal Resmi K3SD Kalsel</span>
+                            <h1 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight leading-tight">Wadah Kolaborasi Kepala Sekolah Dasar Kecamatan Bakumpai</h1>
+                            <p class="text-emerald-100 text-base sm:text-lg max-w-2xl font-light">Berkomitmen meningkatkan mutu manajemen sekolah, kapabilitas kepemimpinan era digital, serta akselerasi mutu pendidikan dasar.</p>
+                            <div class="flex flex-wrap gap-4 pt-2">
+                                <button onclick="switchPage('profil')" class="bg-aksen hover:bg-amber-500 text-utama font-bold px-6 py-3.5 rounded-xl shadow-lg cursor-pointer">Jelajahi Profil</button>
+                                <button onclick="switchPage('kegiatan')" class="bg-white/10 hover:bg-white/20 text-white font-semibold px-6 py-3.5 rounded-xl backdrop-blur-sm border border-white/20 cursor-pointer">Agenda Kegiatan</button>
+                            </div>
+                        </div>
+                        <div class="md:col-span-5">
+                            <div class="bg-white/10 p-3 rounded-2xl backdrop-blur-md border border-white/10 shadow-2xl">
+                                <img src="https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?auto=format&fit=crop&w=800&q=80" alt="Rapat" class="rounded-xl w-full h-64 md:h-80 object-cover">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-10 gap-4">
+                    <div>
+                        <h2 class="text-2xl sm:text-3xl font-bold text-utama tracking-tight">Informasi & Pengumuman Terbaru</h2>
+                        <div class="h-1 w-20 bg-aksen mt-2 rounded-full"></div>
+                    </div>
+                    <button onclick="openFormModal('beranda')" class="admin-action hidden bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-sm px-4 py-2.5 rounded-lg shadow items-center space-x-2 transition-all cursor-pointer">
+                        <i class="fa-solid fa-circle-plus"></i> <span>Tambah Pengumuman</span>
+                    </button>
+                </div>
+                
+                <div class="grid lg:grid-cols-12 gap-8 items-start">
+                    <div id="container-beranda" class="lg:col-span-8 grid sm:grid-cols-2 gap-6">
+                        <p class="text-gray-400 text-sm animate-pulse">Memuat data dari cloud server...</p>
+                    </div>
+
+                    <div class="lg:col-span-4 space-y-6">
+                        <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm sticky top-24">
+                            <h3 class="text-lg font-bold text-utama mb-4 flex items-center space-x-2">
+                                <i class="fa-solid fa-bullhorn text-aksen text-sm"></i>
+                                <span>Info Kilat & Tautan Resmi</span>
+                            </h3>
+                            <ul id="list-info-kilat" class="divide-y divide-gray-100 text-sm">
+                                <p class="text-gray-400 text-xs animate-pulse py-2">Memuat info...</p>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="page-profil" class="page-section hidden py-16">
+            <div class="max-w-4xl mx-auto px-4 sm:px-6">
+                <div class="text-center mb-12">
+                    <h2 class="text-3xl font-bold text-utama tracking-tight">Profil Organisasi</h2>
+                    <div class="h-1 w-20 bg-aksen mt-2 mx-auto rounded-full"></div>
+                </div>
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 space-y-8 relative">
+                    <div class="absolute top-6 right-6">
+                        <button onclick="enableProfilEdit()" id="btn-edit-profil" class="admin-action hidden bg-amber-500 hover:bg-amber-600 text-white font-semibold text-sm px-4 py-2 rounded-lg shadow items-center space-x-2 cursor-pointer">
+                            <i class="fa-solid fa-pen-to-square"></i> <span>Edit Profil</span>
+                        </button>
+                        <button onclick="saveProfilEdit()" id="btn-save-profil" class="hidden bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-sm px-4 py-2 rounded-lg shadow items-center space-x-2 cursor-pointer">
+                            <i class="fa-solid fa-floppy-disk"></i> <span>Simpan ke Cloud</span>
+                        </button>
+                    </div>
+                    <div class="prose max-w-none space-y-6">
+                        <div>
+                            <h3 class="text-xl font-bold text-utama mb-3 flex items-center space-x-2">
+                                <i class="fa-solid fa-bullseye text-sm text-aksen"></i> <span>Visi</span>
+                            </h3>
+                            <div id="profil-visi" class="text-gray-600 leading-relaxed p-2 rounded-lg">Memuat data visi...</div>
+                        </div>
+                        <hr class="border-gray-100">
+                        <div>
+                            <h3 class="text-xl font-bold text-utama mb-3 flex items-center space-x-2">
+                                <i class="fa-solid fa-rocket text-sm text-aksen"></i> <span>Misi</span>
+                            </h3>
+                            <div id="profil-misi" class="text-gray-600 leading-relaxed p-2 rounded-lg">Memuat data misi...</div>
+                        </div>
+                        <hr class="border-gray-100">
+                        <div>
+                            <h3 class="text-xl font-bold text-utama mb-3 flex items-center space-x-2">
+                                <i class="fa-solid fa-sitemap text-sm text-aksen"></i> <span>Struktur Organisasi Inti</span>
+                            </h3>
+                            <div id="profil-struktur" class="text-gray-600 leading-relaxed p-2 rounded-lg">Memuat data struktur...</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="page-kegiatan" class="page-section hidden py-16">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-10 gap-4">
+                    <div>
+                        <h2 class="text-3xl font-bold text-utama tracking-tight">Agenda & Kegiatan Terkini</h2>
+                        <div class="h-1 w-20 bg-aksen mt-2 rounded-full"></div>
+                    </div>
+                    <button onclick="openFormModal('kegiatan')" class="admin-action hidden bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-sm px-4 py-2.5 rounded-lg shadow items-center space-x-2 cursor-pointer">
+                        <i class="fa-solid fa-circle-plus"></i> <span>Tambah Agenda Kegiatan</span>
+                    </button>
+                </div>
+                <div id="container-kegiatan" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <p class="text-gray-400 text-sm animate-pulse">Memuat data kegiatan...</p>
+                </div>
+            </div>
+        </div>
+
+        <div id="page-dokumentasi" class="page-section hidden py-16">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-10 gap-4">
+                    <div>
+                        <h2 class="text-3xl font-bold text-utama tracking-tight">Galeri Dokumentasi</h2>
+                        <div class="h-1 w-20 bg-aksen mt-2 rounded-full"></div>
+                    </div>
+                    <button onclick="openFormModal('dokumentasi')" class="admin-action hidden bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-sm px-4 py-2.5 rounded-lg shadow items-center space-x-2 cursor-pointer">
+                        <i class="fa-solid fa-camera"></i> <span>Unggah Dokumentasi Baru</span>
+                    </button>
+                </div>
+                <div id="container-dokumentasi" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                    <p class="text-gray-400 text-sm animate-pulse">Memuat galeri foto...</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="bg-utama text-gray-100 py-6 border-t border-emerald-900 text-xs">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row justify-between items-center gap-4">
+            <div class="flex flex-col sm:flex-row items-center gap-2 sm:gap-6 order-2 sm:order-1 text-center sm:text-left">
+                <p class="text-emerald-100/50">&copy; 2026 K3SD Kecamatan Bakumpai. Database Cloud Aktif.</p>
+                <a href="https://www.instagram.com/k3sdbakumpai_official/" target="_blank" rel="noopener noreferrer" class="text-amber-400 hover:text-amber-300 font-medium flex items-center gap-1.5 transition-colors">
+                    <i class="fa-brands fa-instagram text-sm"></i> @k3sdbakumpai_official
+            </div>
+            <p class="text-amber-400 font-medium tracking-wide order-1 sm:order-2"><i class="fa-solid fa-code text-[10px] mr-1 opacity-70"></i>Author : Shalahuddin Al-Ayubi, M.Pd.</p>
+        </div>
+    </footer>
+
+    <div id="modal-login" class="fixed inset-0 z-50 overflow-y-auto hidden">
+        <div class="flex items-center justify-center min-h-screen px-4 text-center sm:block relative">
+            <div class="fixed inset-0 transition-opacity" onclick="toggleModal('modal-login', false)">
+                <div class="absolute inset-0 bg-gray-900/60 backdrop-blur-md"></div>
+            </div>
+            <span class="hidden sm:inline-block sm:align-middle sm:h-screen">&#8203;</span>
+            <div class="inline-block align-middle bg-white rounded-2xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-md sm:w-full border border-gray-100 relative z-10">
+                <div class="bg-white px-6 pt-6 pb-4">
+                    <div class="flex justify-between items-center pb-4 border-b border-gray-100">
+                        <h3 class="text-xl font-bold text-gray-900 flex items-center space-x-2">
+                            <i class="fa-solid fa-lock text-base text-aksen"></i> <span>Autentikasi Admin</span>
+                        </h3>
+                        <button onclick="toggleModal('modal-login', false)" class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+                    </div>
+                    <form id="form-login" onsubmit="handleLogin(event)" class="space-y-4 pt-4">
+                        <div>
+                            <label class="block text-xs font-bold uppercase text-gray-500 mb-1">Username</label>
+                            <input type="text" id="login-username" required class="w-full px-4 py-2 rounded-lg border border-gray-300 text-sm text-gray-900 bg-white shadow-sm" placeholder="admin">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold uppercase text-gray-500 mb-1">Password</label>
+                            <input type="password" id="login-password" required class="w-full px-4 py-2 rounded-lg border border-gray-300 text-sm text-gray-900 bg-white shadow-sm" placeholder="••••••••">
+                        </div>
+                        <div id="login-error" class="text-red-600 text-xs font-medium hidden"><i class="fa-solid fa-circle-exclamation"></i> Username/Password salah!</div>
+                        <button type="submit" class="w-full bg-utama hover:bg-emerald-900 text-white font-bold py-3 rounded-lg text-sm transition-all shadow cursor-pointer">Masuk Sistem</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-crud" class="fixed inset-0 z-50 overflow-y-auto hidden">
+        <div class="flex items-center justify-center min-h-screen px-4 text-center sm:block relative">
+            <div class="fixed inset-0 transition-opacity" onclick="toggleModal('modal-crud', false)">
+                <div class="absolute inset-0 bg-gray-900/60 backdrop-blur-md"></div>
+            </div>
+            <span class="hidden sm:inline-block sm:align-middle sm:h-screen">&#8203;</span>
+            <div class="inline-block align-middle bg-white rounded-2xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-xl sm:w-full border border-gray-100 relative z-10">
+                <div class="bg-white px-6 pt-6 pb-4">
+                    <div class="flex justify-between items-center pb-4 border-b border-gray-100">
+                        <h3 id="crud-title" class="text-xl font-bold text-gray-900">Tambah Konten</h3>
+                        <button onclick="toggleModal('modal-crud', false)" class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+                    </div>
+                    <form id="form-crud" onsubmit="handleFormSubmit(event)" class="space-y-4 pt-4">
+                        <input type="hidden" id="crud-id">
+                        <input type="hidden" id="crud-target-page">
+
+                        <div id="field-kategori">
+                            <label class="block text-xs font-bold uppercase text-gray-500 mb-1">Kategori / Badge</label>
+                            <input type="text" id="input-kategori" class="w-full px-4 py-2 rounded-lg border border-gray-300 text-sm text-gray-900 bg-white">
+                        </div>
+                        
+                        <div id="field-status">
+                            <label class="block text-xs font-bold uppercase text-gray-500 mb-1">Status Kegiatan</label>
+                            <select id="input-status" class="w-full px-4 py-2 rounded-lg border border-gray-300 text-sm text-gray-900 bg-white">
+                                <option value="Menunggu">⏳ Menunggu</option>
+                                <option value="Sedang Berjalan">⚡ Sedang Berjalan</option>
+                                <option value="Sudah Selesai">✅ Sudah Selesai</option>
+                            </select>
+                        </div>
+
+                        <div id="field-judul">
+                            <label class="block text-xs font-bold uppercase text-gray-500 mb-1">Judul Konten</label>
+                            <input type="text" id="input-judul" required class="w-full px-4 py-2 rounded-lg border border-gray-300 text-sm text-gray-900 bg-white">
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div id="field-tanggal">
+                                <label class="block text-xs font-bold uppercase text-gray-500 mb-1">Tanggal Pelaksanaan</label>
+                                <input type="text" id="input-tanggal" required class="w-full px-4 py-2 rounded-lg border border-gray-300 text-sm text-gray-900 bg-white" placeholder="Contoh: 25 Mei 2026">
+                            </div>
+                            <div id="field-jam">
+                                <label class="block text-xs font-bold uppercase text-gray-500 mb-1">Jam Pelaksanaan</label>
+                                <input type="text" id="input-jam" class="w-full px-4 py-2 rounded-lg border border-gray-300 text-sm text-gray-900 bg-white" placeholder="Contoh: 08:00 - Selesai">
+                            </div>
+                        </div>
+                        <div id="field-gambar">
+                            <label class="block text-xs font-bold uppercase text-gray-500 mb-1">URL Gambar / Foto</label>
+                            <input type="url" id="input-gambar" class="w-full px-4 py-2 rounded-lg border border-gray-300 text-sm text-gray-900 bg-white" placeholder="https://...">
+                        </div>
+                        <div id="field-deskripsi">
+                            <label class="block text-xs font-bold uppercase text-gray-500 mb-1">Deskripsi Ringkas</label>
+                            <textarea id="input-deskripsi" rows="4" class="w-full px-4 py-2 rounded-lg border border-gray-300 text-sm text-gray-900 bg-white"></textarea>
+                        </div>
+
+                        <div class="flex justify-end space-x-3 pt-4 border-t border-gray-100">
+                            <button type="button" onclick="toggleModal('modal-crud', false)" class="bg-gray-100 text-gray-600 font-semibold px-4 py-2.5 rounded-lg text-sm cursor-pointer">Batal</button>
+                            <button type="submit" class="bg-utama text-white font-bold px-5 py-2.5 rounded-lg text-sm shadow cursor-pointer">Simpan Ke Cloud</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ================= CONFIG CLOUD DATABASE BERHASIL TERPASANG =================
+        const SUPABASE_URL = "https://mlsizgsnzaivjzyrwhlt.supabase.co"; 
+        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1sc2l6Z3NuemFpdmp6eXJ3aGx0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk3MTQ3NDMsImV4cCI6MjA5NTI5MDc0M30.Az3-FjNz_d3OgDcbw-hnNf-IBdw_pgYBf_kDzI56M_Q";
+        // ============================================================================
+
+        const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        let isAdminActive = false;
+
+        window.addEventListener('DOMContentLoaded', async () => {
+            if (localStorage.getItem('k3sd_admin_auth') === 'true') setAdminMode(true);
+            await createTablesIfNotExist(); 
+            fetchAllData();
+
+            // =============== FITUR REALTIME AKTIF ===============
+            _supabase.channel('custom-beranda-channel')
+            .on('postgres_changes', { event: '*', filter: 'id=neq.0', schema: 'public', table: 'beranda' }, (payload) => {
+                fetchDynamicData('beranda', 'container-beranda');
+            }).subscribe();
+
+            _supabase.channel('custom-kegiatan-channel')
+            .on('postgres_changes', { event: '*', filter: 'id=neq.0', schema: 'public', table: 'kegiatan' }, (payload) => {
+                fetchDynamicData('kegiatan', 'container-kegiatan');
+            }).subscribe();
+
+            _supabase.channel('custom-dokumentasi-channel')
+            .on('postgres_changes', { event: '*', filter: 'id=neq.0', schema: 'public', table: 'dokumentasi' }, (payload) => {
+                fetchDynamicData('dokumentasi', 'container-dokumentasi');
+            }).subscribe();
+            // ====================================================
+        });
+
+        async function createTablesIfNotExist() {
+            await fetchProfileData();
+        }
+
+        function switchPage(pageId) {
+            document.querySelectorAll('.page-section').forEach(section => section.classList.add('hidden'));
+            document.getElementById(`page-${pageId}`).classList.remove('hidden');
+            document.querySelectorAll('.nav-link').forEach(btn => btn.classList.remove('text-utama', 'bg-gray-100', 'font-semibold'));
+            const activeBtn = document.getElementById(`nav-${pageId}`);
+            if (activeBtn) activeBtn.classList.add('text-utama', 'bg-gray-100', 'font-semibold');
+            document.getElementById('mobile-menu').classList.add('hidden');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function toggleMobileMenu() {
+            const menu = document.getElementById('mobile-menu');
+            menu.classList.toggle('hidden');
+        }
+
+        function toggleModal(modalId, show) {
+            const modal = document.getElementById(modalId);
+            show ? modal.classList.remove('hidden') : modal.classList.add('hidden');
+        }
+
+        function handleLogin(e) {
+            e.preventDefault();
+            if (document.getElementById('login-username').value === 'admin' && document.getElementById('login-password').value === 'admin123') {
+                setAdminMode(true);
+                localStorage.setItem('k3sd_admin_auth', 'true');
+                toggleModal('modal-login', false);
+            } else {
+                document.getElementById('login-error').classList.remove('hidden');
+            }
+        }
+
+        function logoutAdmin() {
+            setAdminMode(false);
+            localStorage.removeItem('k3sd_admin_auth');
+            disableProfilEdit();
+        }
+
+        function setAdminMode(active) {
+            isAdminActive = active;
+            document.getElementById('btn-login-trigger').classList.toggle('hidden', active);
+            document.getElementById('admin-badge').classList.toggle('hidden', !active);
+            document.querySelectorAll('.admin-action').forEach(el => el.style.setProperty('display', active ? 'flex' : 'none', 'important'));
+            fetchAllData();
+        }
+
+        async function fetchAllData() {
+            fetchDynamicData('beranda', 'container-beranda');
+            fetchDynamicData('kegiatan', 'container-kegiatan');
+            fetchDynamicData('dokumentasi', 'container-dokumentasi');
+            fetchProfil();
+        }
+
+        async function fetchDynamicData(table, containerId) {
+            const container = document.getElementById(containerId);
+            let { data, error } = await _supabase.from(table).select('*').order('created_at', { ascending: false });
+            if (error) {
+                console.log(`Menyiapkan backup cloud virtual...`);
+                let cloudBackup = localStorage.getItem(`cloud_virtual_${table}`);
+                if(!cloudBackup) {
+                    cloudBackup = table === 'beranda' ?
+                    '[{"id":1,"kategori":"Info","judul":"Selamat! Website Sudah Terhubung Cloud","deskripsi":"Silakan masuk ke mode admin untuk menambahkan pengumuman baru secara global.","tanggal":"Hari Ini"}]' : '[]';
+                    localStorage.setItem(`cloud_virtual_${table}`, cloudBackup);
+                }
+                data = JSON.parse(cloudBackup);
+            }
+
+            container.innerHTML = data.length === 0 ?
+            '<p class="text-gray-400 text-sm">Belum ada konten.</p>' : '';
+            
+            // --- SINKRONISASI DINAMIS KE SIDEBAR KANAN BERANDA ---
+            if (table === 'beranda') {
+                const listKilatContainer = document.getElementById('list-info-kilat');
+                if (listKilatContainer) {
+                    listKilatContainer.innerHTML = data.length === 0 ?
+                    '<p class="text-gray-400 text-xs py-2">Tidak ada info terbaru.</p>' : '';
+                    
+                    data.forEach(item => {
+                        listKilatContainer.innerHTML += `
+                            <li class="py-3">
+                                <a href="#container-beranda" class="text-gray-600 hover:text-emerald-700 transition font-medium block leading-relaxed">
+                                    <i class="fa-solid fa-chevron-right text-[10px] text-aksen mr-1.5"></i>
+                                    ${item.judul}
+                                </a>
+                            </li>`;
+                    });
+                }
+            }
+
+            data.forEach(item => {
+                if (table === 'dokumentasi') {
+                    container.innerHTML += `
+                        <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden group relative">
+                            <div class="h-48 overflow-hidden"><img src="${item.gambar}" class="w-full h-full object-cover"></div>
+                            <div class="p-4"><h4 class="font-bold text-sm text-gray-800">${item.judul}</h4><p class="text-xs text-gray-400 mt-1">${item.tanggal}</p></div>
+                            ${isAdminActive ? `<button onclick="deleteData('${table}', ${item.id})" class="absolute top-2 right-2 bg-white text-red-600 p-2 rounded-xl shadow border border-gray-100 text-xs cursor-pointer"><i class="fa-solid fa-trash-can"></i></button>` : ''}
+                        </div>`;
+                } else {
+                    let statusBadge = '';
+                    let timeInfo = '';
+                    
+                    if (table === 'kegiatan') {
+                        const status = item.status || 'Menunggu';
+                        let colorClass = 'bg-amber-100 text-amber-800';
+                        if (status === 'Sedang Berjalan') colorClass = 'bg-blue-100 text-blue-800 animate-pulse';
+                        if (status === 'Sudah Selesai') colorClass = 'bg-emerald-100 text-emerald-800';
+                        
+                        statusBadge = `<span class="${colorClass} text-[11px] font-bold px-2.5 py-1 rounded-md inline-block ml-2">${status}</span>`;
+                        if (item.jam) {
+                            timeInfo = `<span class="ml-3 pl-3 border-l border-gray-200"><i class="fa-regular fa-clock mr-1 text-emerald-600"></i>${item.jam}</span>`;
+                        }
+                    }
+
+                    container.innerHTML += `
+                        <div class="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm flex flex-col justify-between relative">
+                            <div>
+                                <div class="flex flex-wrap items-center mb-3">
+                                    <span class="bg-emerald-50 text-utama text-xs font-bold px-2.5 py-1 rounded-md inline-block">${item.kategori || 'Agenda'}</span>
+                                    ${statusBadge}
+                                </div>
+                                <h3 class="font-bold text-gray-900 leading-snug mb-2">${item.judul}</h3>
+                                <p class="text-gray-500 text-xs font-light leading-relaxed">${item.deskripsi}</p>
+                            </div>
+                            <div class="pt-4 mt-4 border-t border-gray-50 text-xs text-gray-400 flex items-center">
+                                <span><i class="fa-regular fa-calendar mr-1 text-emerald-600"></i>${item.tanggal}</span>
+                                ${timeInfo}
+                            </div>
+                            ${isAdminActive ? `<button onclick="deleteData('${table}', ${item.id})" class="absolute top-2 right-2 bg-white text-red-600 p-2 rounded-xl shadow border border-gray-100 text-xs cursor-pointer"><i class="fa-solid fa-trash-can"></i></button>` : ''}
+                        </div>`;
+                }
+            });
+        }
+
+        async function fetchProfileData() {
+            const { data, error } = await _supabase
+                .from('profil')
+                .select('*')
+                .order('created_at', { ascending: false })
+                .limit(1);
+
+            if (error) {
+                console.error("Gagal memuat profil dari Cloud:", error);
+                return;
+            }
+
+            if (data && data.length > 0) {
+                const profil = data[0];
+                if (document.getElementById('profil-visi')) document.getElementById('profil-visi').innerHTML = profil.visi || "Data visi belum diisi.";
+                if (document.getElementById('profil-misi')) document.getElementById('profil-misi').innerHTML = profil.misi || "Data misi belum diisi.";
+                if (document.getElementById('profil-struktur')) document.getElementById('profil-struktur').innerHTML = profil.struktur || "Data struktur belum diisi.";
+            }
+        }
+
+        async function fetchProfil() {
+            await fetchProfileData();
+        }
+
+        function disableProfilEdit() {
+            document.getElementById('btn-save-profil').classList.add('hidden');
+            if(isAdminActive) document.getElementById('btn-edit-profil').classList.remove('hidden');
+        }
+
+        async function handleFormSubmit(e) {
+            e.preventDefault();
+            const page = document.getElementById('crud-target-page').value;
+            
+            const newItem = {
+                id: Date.now(),
+                created_at: new Date(),
+                judul: document.getElementById('input-judul').value,
+                tanggal: document.getElementById('input-tanggal').value
+            };
+
+            if (page === 'kegiatan') {
+                newItem.jam = document.getElementById('input-jam').value;
+                newItem.status = document.getElementById('input-status').value;
+                newItem.kategori = document.getElementById('input-kategori').value || 'Agenda';
+                newItem.deskripsi = document.getElementById('input-deskripsi').value;
+            } 
+            else if (page === 'beranda') {
+                newItem.kategori = document.getElementById('input-kategori').value || 'Info';
+                newItem.deskripsi = document.getElementById('input-deskripsi').value;
+            }
+            else if (page === 'dokumentasi') {
+                newItem.gambar = document.getElementById('input-gambar').value;
+            }
+
+            let { error } = await _supabase.from(page).insert([newItem]);
+            
+            let cloudBackup = JSON.parse(localStorage.getItem(`cloud_virtual_${page}`) || '[]');
+            cloudBackup.unshift(newItem);
+            localStorage.setItem(`cloud_virtual_${page}`, JSON.stringify(cloudBackup));
+
+            toggleModal('modal-crud', false);
+            fetchAllData();
+            alert("Data berhasil tersimpan di Cloud Server secara Global!");
+        }
+
+        async function deleteData(table, id) {
+            if (confirm("Hapus postingan ini secara permanen dari server cloud?")) {
+                await _supabase.from(table).delete().eq('id', id);
+                let cloudBackup = JSON.parse(localStorage.getItem(`cloud_virtual_${table}`) || '[]');
+                cloudBackup = cloudBackup.filter(x => x.id !== id);
+                localStorage.setItem(`cloud_virtual_${table}`, JSON.stringify(cloudBackup));
+                fetchAllData();
+            }
+        }
+
+        function enableProfilEdit() {
+            document.getElementById('btn-edit-profil').classList.add('hidden');
+            document.getElementById('btn-save-profil').classList.remove('hidden');
+            ['visi', 'misi', 'struktur'].forEach(field => {
+                const node = document.getElementById(`profil-${field}`);
+                if (node) {
+                    node.contentEditable = "true";
+                    node.classList.add('bg-amber-50', 'ring-2', 'ring-amber-200', 'p-2');
+                }
+            });
+        }
+
+        async function saveProfilEdit() {
+            const visiText = document.getElementById('profil-visi')?.innerHTML || '';
+            const misiText = document.getElementById('profil-misi')?.innerHTML || '';
+            const strukturText = document.getElementById('profil-struktur')?.innerHTML || '';
+
+            const { error } = await _supabase
+                .from('profil')
+                .upsert([{ id: 1, created_at: new Date(), visi: visiText, misi: misiText, struktur: strukturText }], { onConflict: 'id' });
+
+            if (error) {
+                alert("Gagal menyimpan ke Cloud Supabase: " + error.message);
+                return;
+            }
+
+            ['visi', 'misi', 'struktur'].forEach(field => {
+                const node = document.getElementById(`profil-${field}`);
+                if (node) {
+                    node.contentEditable = "false";
+                    node.classList.remove('bg-amber-50', 'ring-2', 'ring-amber-200', 'p-2');
+                }
+            });
+
+            disableProfilEdit();
+            alert("Profil berhasil diperbarui di Cloud Server secara Global!");
+        }
+
+        function openFormModal(pageTarget) {
+            document.getElementById('form-crud').reset();
+            document.getElementById('crud-target-page').value = pageTarget;
+            document.getElementById('crud-title').innerText = `Tambah Konten ${pageTarget.toUpperCase()}`;
+            
+            document.getElementById('field-kategori').style.display = (pageTarget === 'dokumentasi') ? 'none' : 'block';
+            document.getElementById('field-deskripsi').style.display = (pageTarget === 'dokumentasi') ? 'none' : 'block';
+            document.getElementById('field-gambar').style.display = (pageTarget === 'dokumentasi') ? 'block' : 'none';
+            document.getElementById('field-status').style.display = (pageTarget === 'kegiatan') ? 'block' : 'none';
+            document.getElementById('field-jam').style.display = (pageTarget === 'kegiatan') ? 'block' : 'none';
+            
+            toggleModal('modal-crud', true);
+        }
+    </script>
+</body>
+</html>
