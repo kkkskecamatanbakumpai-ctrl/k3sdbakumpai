@@ -349,6 +349,7 @@
 
         const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         let isAdminActive = false;
+        let activeDataList = {}; // Variabel bantu global untuk menyimpan temporary local state data agar bisa dipasok ke form edit
 
         window.addEventListener('DOMContentLoaded', async () => {
             if (localStorage.getItem('k3sd_admin_auth') === 'true') setAdminMode(true);
@@ -370,7 +371,6 @@
                 fetchDynamicData('dokumentasi', 'container-dokumentasi');
             }).subscribe();
 
-            // Realtime listener untuk tabel Arsip Data
             _supabase.channel('custom-arsip-channel')
             .on('postgres_changes', { event: '*', filter: 'id=neq.0', schema: 'public', table: 'arsip' }, (payload) => {
                 fetchDynamicData('arsip', 'container-arsip');
@@ -430,14 +430,13 @@
             fetchDynamicData('beranda', 'container-beranda');
             fetchDynamicData('kegiatan', 'container-kegiatan');
             fetchDynamicData('dokumentasi', 'container-dokumentasi');
-            fetchDynamicData('arsip', 'container-arsip'); // Tarik data arsip
+            fetchDynamicData('arsip', 'container-arsip');
             fetchProfil();
         }
 
         async function fetchDynamicData(table, containerId) {
             const container = document.getElementById(containerId);
             let { data, error } = await _supabase.from(table).select('*').order('created_at', { ascending: false });
-            
             if (error) {
                 console.log(`Menyiapkan backup cloud virtual...`);
                 let cloudBackup = localStorage.getItem(`cloud_virtual_${table}`);
@@ -448,6 +447,9 @@
                 }
                 data = JSON.parse(cloudBackup);
             }
+
+            // Simpan ke memory global object agar data per baris/kartu bisa diambil tanpa fetch ulang saat klik edit
+            activeDataList[table] = data;
 
             container.innerHTML = data.length === 0 ?
             `<p class="text-gray-400 text-sm ${table === 'arsip' ? 'p-6' : ''}">Belum ada konten.</p>` : '';
@@ -476,11 +478,14 @@
                         <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden group relative">
                             <div class="h-48 overflow-hidden"><img src="${item.gambar}" class="w-full h-full object-cover"></div>
                             <div class="p-4"><h4 class="font-bold text-sm text-gray-800">${item.judul}</h4><p class="text-xs text-gray-400 mt-1">${item.tanggal}</p></div>
-                            ${isAdminActive ? `<button onclick="deleteData('${table}', ${item.id})" class="absolute top-2 right-2 bg-white text-red-600 p-2 rounded-xl shadow border border-gray-100 text-xs cursor-pointer"><i class="fa-solid fa-trash-can"></i></button>` : ''}
+                            ${isAdminActive ? `
+                            <div class="absolute top-2 right-2 flex space-x-1">
+                                <button onclick="openFormModal('${table}', ${item.id})" class="bg-white text-amber-600 p-2 rounded-xl shadow border border-gray-100 text-xs cursor-pointer"><i class="fa-solid fa-pen"></i></button>
+                                <button onclick="deleteData('${table}', ${item.id})" class="bg-white text-red-600 p-2 rounded-xl shadow border border-gray-100 text-xs cursor-pointer"><i class="fa-solid fa-trash-can"></i></button>
+                            </div>` : ''}
                         </div>`;
                 } 
                 else if (table === 'arsip') {
-                    // Layout khusus list unduhan Arsip Data
                     container.innerHTML += `
                         <li class="p-5 flex items-center justify-between hover:bg-gray-50 transition group">
                             <div class="flex items-center space-x-4 min-w-0 flex-1">
@@ -497,6 +502,9 @@
                                     <i class="fa-solid fa-cloud-arrow-down"></i> <span>Download</span>
                                 </a>
                                 ${isAdminActive ? `
+                                <button onclick="openFormModal('${table}', ${item.id})" class="bg-white hover:bg-amber-55 text-amber-600 p-2 rounded-lg border border-gray-100 shadow-sm text-xs cursor-pointer transition-colors">
+                                    <i class="fa-solid fa-pen"></i>
+                                </button>
                                 <button onclick="deleteData('${table}', ${item.id})" class="bg-white hover:bg-red-50 text-red-600 p-2 rounded-lg border border-gray-100 shadow-sm text-xs cursor-pointer transition-colors">
                                     <i class="fa-solid fa-trash-can"></i>
                                 </button>` : ''}
@@ -541,7 +549,11 @@
                                 <span><i class="fa-regular fa-calendar mr-1 text-sky-600"></i>${item.tanggal}</span>
                                 ${timeInfo}
                             </div>
-                            ${isAdminActive ? `<button onclick="deleteData('${table}', ${item.id})" class="absolute top-2 right-2 bg-white text-red-600 p-2 rounded-xl shadow border border-gray-100 text-xs cursor-pointer"><i class="fa-solid fa-trash-can"></i></button>` : ''}
+                            ${isAdminActive ? `
+                            <div class="absolute top-2 right-2 flex space-x-1">
+                                <button onclick="openFormModal('${table}', ${item.id})" class="bg-white text-amber-600 p-2 rounded-xl shadow border border-gray-100 text-xs cursor-pointer"><i class="fa-solid fa-pen"></i></button>
+                                <button onclick="deleteData('${table}', ${item.id})" class="bg-white text-red-600 p-2 rounded-xl shadow border border-gray-100 text-xs cursor-pointer"><i class="fa-solid fa-trash-can"></i></button>
+                            </div>` : ''}
                         </div>`;
                 }
             });
@@ -578,41 +590,61 @@
         async function handleFormSubmit(e) {
             e.preventDefault();
             const page = document.getElementById('crud-target-page').value;
+            const existingId = document.getElementById('crud-id').value;
             
-            const newItem = {
-                id: Date.now(),
-                created_at: new Date(),
+            // Definisikan struktur objek awal
+            const itemData = {
                 judul: document.getElementById('input-judul').value,
                 tanggal: document.getElementById('input-tanggal').value
             };
 
             if (page === 'kegiatan') {
-                newItem.jam = document.getElementById('input-jam').value;
-                newItem.status = document.getElementById('input-status').value;
-                newItem.kategori = document.getElementById('input-kategori').value || 'Agenda';
-                newItem.tempat = document.getElementById('input-tempat').value;
-                newItem.deskripsi = document.getElementById('input-deskripsi').value;
+                itemData.jam = document.getElementById('input-jam').value;
+                itemData.status = document.getElementById('input-status').value;
+                itemData.kategori = document.getElementById('input-kategori').value || 'Agenda';
+                itemData.tempat = document.getElementById('input-tempat').value;
+                itemData.deskripsi = document.getElementById('input-deskripsi').value;
             } 
             else if (page === 'beranda') {
-                newItem.kategori = document.getElementById('input-kategori').value || 'Info';
-                newItem.deskripsi = document.getElementById('input-deskripsi').value;
+                itemData.kategori = document.getElementById('input-kategori').value || 'Info';
+                itemData.deskripsi = document.getElementById('input-deskripsi').value;
             }
-            else if (page === 'dokumentasi') {
-                newItem.gambar = document.getElementById('input-gambar').value;
-            }
-            else if (page === 'arsip') {
-                // Memanfaatkan field input-gambar untuk menyimpan tautan URL Download berkas
-                newItem.gambar = document.getElementById('input-gambar').value;
+            else if (page === 'dokumentasi' || page === 'arsip') {
+                itemData.gambar = document.getElementById('input-gambar').value;
             }
 
-            let { error } = await _supabase.from(page).insert([newItem]);
-            let cloudBackup = JSON.parse(localStorage.getItem(`cloud_virtual_${page}`) || '[]');
-            cloudBackup.unshift(newItem);
-            localStorage.setItem(`cloud_virtual_${page}`, JSON.stringify(cloudBackup));
+            let errorCloud = null;
 
-            toggleModal('modal-crud', false);
-            fetchAllData();
-            alert("Data berhasil tersimpan di Cloud Server secara Global!");
+            if (existingId) {
+                // LOGIKA UPDATE DATA (JIKA EDIT)
+                itemData.id = parseInt(existingId);
+                let { error } = await _supabase.from(page).update(itemData).eq('id', itemData.id);
+                errorCloud = error;
+
+                // Update Local Backup Virtual Storage
+                let cloudBackup = JSON.parse(localStorage.getItem(`cloud_virtual_${page}`) || '[]');
+                cloudBackup = cloudBackup.map(x => x.id === itemData.id ? { ...x, ...itemData } : x);
+                localStorage.setItem(`cloud_virtual_${page}`, JSON.stringify(cloudBackup));
+            } else {
+                // LOGIKA INSERT DATA BARU (JIKA BARU)
+                itemData.id = Date.now();
+                itemData.created_at = new Date();
+                let { error } = await _supabase.from(page).insert([itemData]);
+                errorCloud = error;
+
+                // Tambahkan ke Local Backup Virtual Storage
+                let cloudBackup = JSON.parse(localStorage.getItem(`cloud_virtual_${page}`) || '[]');
+                cloudBackup.unshift(itemData);
+                localStorage.setItem(`cloud_virtual_${page}`, JSON.stringify(cloudBackup));
+            }
+
+            if (errorCloud) {
+                alert("Gagal memproses data ke server cloud: " + errorCloud.message);
+            } else {
+                toggleModal('modal-crud', false);
+                fetchAllData();
+                alert("Data berhasil tersimpan di Cloud Server secara Global!");
+            }
         }
 
         async function deleteData(table, id) {
@@ -660,17 +692,18 @@
             alert("Profil berhasil diperbarui di Cloud Server secara Global!");
         }
 
-        function openFormModal(pageTarget) {
+        function openFormModal(pageTarget, idToEdit = null) {
             document.getElementById('form-crud').reset();
             document.getElementById('crud-target-page').value = pageTarget;
-            document.getElementById('crud-title').innerText = `Tambah Konten ${pageTarget.toUpperCase()}`;
+            document.getElementById('crud-id').value = idToEdit ? idToEdit : ''; // Menyimpan ID jika mode edit
             
-            // Set label standar
+            // Set label & judul standar modal bawaan
             document.getElementById('label-judul').innerText = "Judul Konten";
             document.getElementById('label-gambar').innerText = "URL Gambar / Foto";
             document.getElementById('input-gambar').placeholder = "https://...";
+            document.getElementById('crud-title').innerText = idToEdit ? `Edit Konten ${pageTarget.toUpperCase()}` : `Tambah Konten ${pageTarget.toUpperCase()}`;
 
-            // Logika Visibilitas Input Form khusus halaman ARSIP
+            // Kondisional Visibilitas Form Input Field berdasarkan Target Page
             if (pageTarget === 'arsip') {
                 document.getElementById('label-judul').innerText = "Nama / Judul File Dokumen";
                 document.getElementById('label-gambar').innerText = "Link / URL Download File";
@@ -691,6 +724,30 @@
                 document.getElementById('field-jam').style.display = (pageTarget === 'kegiatan') ? 'block' : 'none';
                 document.getElementById('field-tempat').style.display = (pageTarget === 'kegiatan') ? 'block' : 'none';
                 document.getElementById('field-tanggal').style.display = 'block';
+            }
+
+            // Jika dipanggil dengan parameter idToEdit, isi nilai form input dari state memori lokal data terpilih
+            if (idToEdit && activeDataList[pageTarget]) {
+                const searchItem = activeDataList[pageTarget].find(x => x.id === idToEdit);
+                if (searchItem) {
+                    document.getElementById('input-judul').value = searchItem.judul || '';
+                    document.getElementById('input-tanggal').value = searchItem.tanggal || '';
+                    
+                    if (pageTarget === 'kegiatan') {
+                        document.getElementById('input-jam').value = searchItem.jam || '';
+                        document.getElementById('input-status').value = searchItem.status || 'Menunggu';
+                        document.getElementById('input-kategori').value = searchItem.kategori || 'Agenda';
+                        document.getElementById('input-tempat').value = searchItem.tempat || '';
+                        document.getElementById('input-deskripsi').value = searchItem.deskripsi || '';
+                    } 
+                    else if (pageTarget === 'beranda') {
+                        document.getElementById('input-kategori').value = searchItem.kategori || 'Info';
+                        document.getElementById('input-deskripsi').value = searchItem.deskripsi || '';
+                    }
+                    else if (pageTarget === 'dokumentasi' || pageTarget === 'arsip') {
+                        document.getElementById('input-gambar').value = searchItem.gambar || '';
+                    }
+                }
             }
             
             toggleModal('modal-crud', true);
