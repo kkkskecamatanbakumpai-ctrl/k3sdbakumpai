@@ -40,10 +40,11 @@
                     <button onclick="switchPage('profil')" id="nav-profil" class="nav-link px-4 py-2 rounded-lg font-medium text-sm text-gray-600 hover:text-utama hover:bg-gray-200">Profil</button>
                     <button onclick="switchPage('kegiatan')" id="nav-kegiatan" class="nav-link px-4 py-2 rounded-lg font-medium text-sm text-gray-600 hover:text-utama hover:bg-gray-200">Kegiatan</button>
                     <button onclick="switchPage('dokumentasi')" id="nav-dokumentasi" class="nav-link px-4 py-2 rounded-lg font-medium text-sm text-gray-600 hover:text-utama hover:bg-gray-200">Dokumentasi</button>
+                    <button onclick="switchPage('arsip')" id="nav-arsip" class="nav-link px-4 py-2 rounded-lg font-medium text-sm text-gray-600 hover:text-utama hover:bg-gray-200">Arsip Data</button>
                     
                     <div class="pl-4 border-l border-gray-300 ml-2">
                         <button id="btn-login-trigger" onclick="toggleModal('modal-login', true)" class="bg-utama hover:bg-sky-950 text-white font-medium text-sm px-5 py-2.5 rounded-lg shadow flex items-center space-x-2 cursor-pointer">
-                            <i class="fa-solid fa-right-to-bracket text-xs"></i> <span>Login Admin</span>
+                             <i class="fa-solid fa-right-to-bracket text-xs"></i> <span>Login Admin</span>
                         </button>
                         <div id="admin-badge" class="hidden flex items-center space-x-3">
                             <span class="bg-amber-100 text-amber-800 text-xs font-bold px-3 py-1.5 rounded-md border border-amber-200 flex items-center shadow-sm">
@@ -67,6 +68,7 @@
             <button onclick="switchPage('profil')" class="block w-full text-left px-4 py-3 rounded-lg text-base font-medium text-gray-600 hover:bg-gray-200">Profil</button>
             <button onclick="switchPage('kegiatan')" class="block w-full text-left px-4 py-3 rounded-lg text-base font-medium text-gray-600 hover:bg-gray-200">Kegiatan</button>
             <button onclick="switchPage('dokumentasi')" class="block w-full text-left px-4 py-3 rounded-lg text-base font-medium text-gray-600 hover:bg-gray-200">Dokumentasi</button>
+            <button onclick="switchPage('arsip')" class="block w-full text-left px-4 py-3 rounded-lg text-base font-medium text-gray-600 hover:bg-gray-200">Arsip Data</button>
             <div class="pt-4 border-t border-gray-200 mt-2">
                 <button id="btn-login-trigger-mobile" onclick="toggleModal('modal-login', true)" class="w-full bg-utama text-white font-medium py-3 rounded-lg text-center cursor-pointer">Login Admin</button>
                 <div id="admin-badge-mobile" class="hidden space-y-2">
@@ -84,7 +86,7 @@
                 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
                     <div class="grid md:grid-cols-12 gap-8 md:gap-12 items-center">
                         <div class="md:col-span-7 space-y-6">
-                            <span class="bg-aksen text-utama text-xs font-bold px-3 py-1.5 rounded-md tracking-wider uppercase inline-block shadow-sm">Portal Resmi K3SD Bakumpai</span>
+                            <span class="bg-aksen text-utama text-xs font-bold px-3 py-1.5 rounded-md tracking-wider uppercase inline-block shadow-sm">Portal Resmi K3SD Kalsel</span>
                             <h1 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight leading-tight">Wadah Kolaborasi Kepala Sekolah Dasar Kecamatan Bakumpai</h1>
                             <p class="text-sky-100 text-base sm:text-lg max-w-2xl font-light">Berkomitmen meningkatkan mutu manajemen sekolah, kapabilitas kepemimpinan era digital, serta akselerasi mutu pendidikan dasar.</p>
                             <div class="flex flex-wrap gap-4 pt-2">
@@ -206,6 +208,25 @@
                 </div>
             </div>
         </div>
+
+        <div id="page-arsip" class="page-section hidden py-16">
+            <div class="max-w-4xl mx-auto px-4 sm:px-6">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-10 gap-4">
+                    <div>
+                        <h2 class="text-3xl font-bold text-utama tracking-tight">Arsip Data & Unduhan File</h2>
+                        <div class="h-1 w-20 bg-aksen mt-2 rounded-full"></div>
+                    </div>
+                    <button onclick="openFormModal('arsip')" class="admin-action hidden bg-sky-700 hover:bg-sky-800 text-white font-semibold text-sm px-4 py-2.5 rounded-lg shadow items-center space-x-2 cursor-pointer">
+                        <i class="fa-solid fa-circle-plus"></i> <span>Tambah Arsip File</span>
+                    </button>
+                </div>
+                <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+                    <ul id="container-arsip" class="divide-y divide-gray-100">
+                        <p class="text-gray-400 text-sm animate-pulse p-6">Memuat berkas dokumen...</p>
+                    </ul>
+                </div>
+            </div>
+        </div>
     </main>
 
     <footer class="bg-utama text-gray-100 py-6 border-t border-sky-950 text-xs">
@@ -282,7 +303,7 @@
                         </div>
 
                         <div id="field-judul">
-                            <label class="block text-xs font-bold uppercase text-gray-500 mb-1">Judul Konten</label>
+                            <label id="label-judul" class="block text-xs font-bold uppercase text-gray-500 mb-1">Judul Konten</label>
                             <input type="text" id="input-judul" required class="w-full px-4 py-2 rounded-lg border border-gray-300 text-sm text-gray-900 bg-white">
                         </div>
                     
@@ -298,7 +319,7 @@
                         </div>
 
                         <div id="field-gambar">
-                            <label class="block text-xs font-bold uppercase text-gray-500 mb-1">URL Gambar / Foto</label>
+                            <label id="label-gambar" class="block text-xs font-bold uppercase text-gray-500 mb-1">URL Gambar / Foto</label>
                             <input type="url" id="input-gambar" class="w-full px-4 py-2 rounded-lg border border-gray-300 text-sm text-gray-900 bg-white" placeholder="https://...">
                         </div>
 
@@ -347,6 +368,12 @@
             _supabase.channel('custom-dokumentasi-channel')
             .on('postgres_changes', { event: '*', filter: 'id=neq.0', schema: 'public', table: 'dokumentasi' }, (payload) => {
                 fetchDynamicData('dokumentasi', 'container-dokumentasi');
+            }).subscribe();
+
+            // Realtime listener untuk tabel Arsip Data
+            _supabase.channel('custom-arsip-channel')
+            .on('postgres_changes', { event: '*', filter: 'id=neq.0', schema: 'public', table: 'arsip' }, (payload) => {
+                fetchDynamicData('arsip', 'container-arsip');
             }).subscribe();
         });
 
@@ -403,12 +430,14 @@
             fetchDynamicData('beranda', 'container-beranda');
             fetchDynamicData('kegiatan', 'container-kegiatan');
             fetchDynamicData('dokumentasi', 'container-dokumentasi');
+            fetchDynamicData('arsip', 'container-arsip'); // Tarik data arsip
             fetchProfil();
         }
 
         async function fetchDynamicData(table, containerId) {
             const container = document.getElementById(containerId);
             let { data, error } = await _supabase.from(table).select('*').order('created_at', { ascending: false });
+            
             if (error) {
                 console.log(`Menyiapkan backup cloud virtual...`);
                 let cloudBackup = localStorage.getItem(`cloud_virtual_${table}`);
@@ -421,7 +450,7 @@
             }
 
             container.innerHTML = data.length === 0 ?
-            '<p class="text-gray-400 text-sm">Belum ada konten.</p>' : '';
+            `<p class="text-gray-400 text-sm ${table === 'arsip' ? 'p-6' : ''}">Belum ada konten.</p>` : '';
             
             if (table === 'beranda') {
                 const listKilatContainer = document.getElementById('list-info-kilat');
@@ -449,10 +478,35 @@
                             <div class="p-4"><h4 class="font-bold text-sm text-gray-800">${item.judul}</h4><p class="text-xs text-gray-400 mt-1">${item.tanggal}</p></div>
                             ${isAdminActive ? `<button onclick="deleteData('${table}', ${item.id})" class="absolute top-2 right-2 bg-white text-red-600 p-2 rounded-xl shadow border border-gray-100 text-xs cursor-pointer"><i class="fa-solid fa-trash-can"></i></button>` : ''}
                         </div>`;
-                } else {
+                } 
+                else if (table === 'arsip') {
+                    // Layout khusus list unduhan Arsip Data
+                    container.innerHTML += `
+                        <li class="p-5 flex items-center justify-between hover:bg-gray-50 transition group">
+                            <div class="flex items-center space-x-4 min-w-0 flex-1">
+                                <div class="p-3 bg-red-50 text-red-600 rounded-xl">
+                                    <i class="fa-solid fa-file-pdf text-xl"></i>
+                                </div>
+                                <div class="min-w-0 flex-1">
+                                    <h4 class="font-bold text-gray-900 text-sm truncate">${item.judul}</h4>
+                                    <p class="text-xs text-gray-400 mt-0.5">Diupload pada: ${item.tanggal}</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center space-x-3 ml-4">
+                                <a href="${item.gambar}" target="_blank" rel="noopener noreferrer" class="bg-utama hover:bg-sky-950 text-white font-semibold text-xs px-4 py-2 rounded-lg shadow-sm flex items-center space-x-1.5 whitespace-nowrap transition-all">
+                                    <i class="fa-solid fa-cloud-arrow-down"></i> <span>Download</span>
+                                </a>
+                                ${isAdminActive ? `
+                                <button onclick="deleteData('${table}', ${item.id})" class="bg-white hover:bg-red-50 text-red-600 p-2 rounded-lg border border-gray-100 shadow-sm text-xs cursor-pointer transition-colors">
+                                    <i class="fa-solid fa-trash-can"></i>
+                                </button>` : ''}
+                            </div>
+                        </li>`;
+                }
+                else {
                     let statusBadge = '';
                     let timeInfo = '';
-                    let tempatInfo = ''; // MODIFIKASI: Menampung elemen HTML Tempat Pelaksanaan
+                    let tempatInfo = '';
                     
                     if (table === 'kegiatan') {
                         const status = item.status || 'Menunggu';
@@ -464,7 +518,6 @@
                         if (item.jam) {
                             timeInfo = `<span class="ml-3 pl-3 border-l border-gray-200"><i class="fa-regular fa-clock mr-1 text-sky-600"></i>${item.jam}</span>`;
                         }
-                        // MODIFIKASI: Layout komponen Tempat Pelaksanaan (di atas deskripsi)
                         if (item.tempat) {
                             tempatInfo = `
                                 <div class="mb-3 text-xs font-medium text-gray-700 flex items-center bg-gray-50 p-2 rounded-lg border border-gray-100">
@@ -532,11 +585,12 @@
                 judul: document.getElementById('input-judul').value,
                 tanggal: document.getElementById('input-tanggal').value
             };
+
             if (page === 'kegiatan') {
                 newItem.jam = document.getElementById('input-jam').value;
                 newItem.status = document.getElementById('input-status').value;
                 newItem.kategori = document.getElementById('input-kategori').value || 'Agenda';
-                newItem.tempat = document.getElementById('input-tempat').value; // MODIFIKASI: Menyimpan properti tempat
+                newItem.tempat = document.getElementById('input-tempat').value;
                 newItem.deskripsi = document.getElementById('input-deskripsi').value;
             } 
             else if (page === 'beranda') {
@@ -544,6 +598,10 @@
                 newItem.deskripsi = document.getElementById('input-deskripsi').value;
             }
             else if (page === 'dokumentasi') {
+                newItem.gambar = document.getElementById('input-gambar').value;
+            }
+            else if (page === 'arsip') {
+                // Memanfaatkan field input-gambar untuk menyimpan tautan URL Download berkas
                 newItem.gambar = document.getElementById('input-gambar').value;
             }
 
@@ -607,12 +665,33 @@
             document.getElementById('crud-target-page').value = pageTarget;
             document.getElementById('crud-title').innerText = `Tambah Konten ${pageTarget.toUpperCase()}`;
             
-            document.getElementById('field-kategori').style.display = (pageTarget === 'dokumentasi') ? 'none' : 'block';
-            document.getElementById('field-deskripsi').style.display = (pageTarget === 'dokumentasi') ? 'none' : 'block';
-            document.getElementById('field-gambar').style.display = (pageTarget === 'dokumentasi') ? 'block' : 'none';
-            document.getElementById('field-status').style.display = (pageTarget === 'kegiatan') ? 'block' : 'none';
-            document.getElementById('field-jam').style.display = (pageTarget === 'kegiatan') ? 'block' : 'none';
-            document.getElementById('field-tempat').style.display = (pageTarget === 'kegiatan') ? 'block' : 'none'; // MODIFIKASI: Menampilkan input tempat khusus halaman kegiatan
+            // Set label standar
+            document.getElementById('label-judul').innerText = "Judul Konten";
+            document.getElementById('label-gambar').innerText = "URL Gambar / Foto";
+            document.getElementById('input-gambar').placeholder = "https://...";
+
+            // Logika Visibilitas Input Form khusus halaman ARSIP
+            if (pageTarget === 'arsip') {
+                document.getElementById('label-judul').innerText = "Nama / Judul File Dokumen";
+                document.getElementById('label-gambar').innerText = "Link / URL Download File";
+                document.getElementById('input-gambar').placeholder = "Contoh: https://drive.google.com/...";
+                
+                document.getElementById('field-kategori').style.display = 'none';
+                document.getElementById('field-deskripsi').style.display = 'none';
+                document.getElementById('field-gambar').style.display = 'block';
+                document.getElementById('field-status').style.display = 'none';
+                document.getElementById('field-jam').style.display = 'none';
+                document.getElementById('field-tempat').style.display = 'none';
+                document.getElementById('field-tanggal').style.display = 'block';
+            } else {
+                document.getElementById('field-kategori').style.display = (pageTarget === 'dokumentasi') ? 'none' : 'block';
+                document.getElementById('field-deskripsi').style.display = (pageTarget === 'dokumentasi') ? 'none' : 'block';
+                document.getElementById('field-gambar').style.display = (pageTarget === 'dokumentasi') ? 'block' : 'none';
+                document.getElementById('field-status').style.display = (pageTarget === 'kegiatan') ? 'block' : 'none';
+                document.getElementById('field-jam').style.display = (pageTarget === 'kegiatan') ? 'block' : 'none';
+                document.getElementById('field-tempat').style.display = (pageTarget === 'kegiatan') ? 'block' : 'none';
+                document.getElementById('field-tanggal').style.display = 'block';
+            }
             
             toggleModal('modal-crud', true);
         }
